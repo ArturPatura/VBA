@@ -1,50 +1,71 @@
-Sub OpenTextFileRead()
+Sub PrepareWorksheet()
 TextFile_FindReplace
 
-Dim fs, a, line, counter, letter, IloscSlow, slowo
+Dim fs, a, line, counter, letter, NumberOfTerms, term 
 Dim words() As String
-counter = 3
+
+'licznik ustawiony od 3, ponieważ skrypt rozpoczyna szukanie od 3 linii
+counter = 3				
 Const ForReading = 1, ForWriting = 2, ForAppending = 8
-Set fs = CreateObject("Scripting.FileSystemObject")
+
+'tworzenie obiektu fs- czyli file stream 
+Set fs = CreateObject("Scripting.FileSystemObject")  
+
+'utworzenie obiektu otwierającego kod maszynowy (GCODE) 
 Set a = fs.OpenTextFile("C:\Users\Dell\Desktop\te.gcode", ForReading, False)
-Do While a.AtEndOfStream <> True
+
+'tak długo, aż plik a nie bedzie pusty, to będzie sie wykonywać 
+Do While a.AtEndOfStream <> True  
+
+'sczytywanie linii
     line = a.ReadLine
+
+'sprawdza czy jest w danej linii g1, (od pierwszej pozycji w linii, sprawdza dwie litery)
     FirstWord = Mid(line, 1, 2)
     If FirstWord = "G1" Then
-        words() = Split(line)
-        IloscSlow = UBound(words)
+   
+'rozdziela wyrazy
+	words() = Split(line) 
+
+'przypisuje do zmiennej ilość słów      
+	NumberOfTerms = UBound(words)  
+
+'sprawdza kolumny od 2 do 6
         For i = 2 To 6
-             
-            For slowo = 1 To IloscSlow
-                If Cells(1, i) = Mid(words(slowo), 1, 1) Then
-                    If Mid(words(slowo), 1, 1) = (Cells(1, 2)) Or Mid(words(slowo), 1, 1) = (Cells(1, 3)) Or Mid(words(slowo), 1, 1) = (Cells(1, 4)) Then
-                            Cells(counter, i) = Mid(words(slowo), 2)
-                    
-                    ElseIf Mid(words(slowo), 1, 1) = (Cells(1, 5)) Or Mid(words(slowo), 1, 1) = (Cells(1, 6)) Then
-                        If Mid(words(slowo), 2) < 0 Then
+
+'sprawdza każde słowo po kolei         
+            For term = 1 To NumberOfTerms  
+                If Cells(1, i) = Mid(words(term), 1, 1) Then
+                    If Mid(words(term), 1, 1) = (Cells(1, 2)) Or Mid(words(term), 1, 1) = (Cells(1, 3)) Or Mid(words(term), 1, 1) = (Cells(1, 4)) Then
+                            Cells(counter, i) = Mid(words(term), 2)
+                    ElseIf Mid(words(term), 1, 1) = (Cells(1, 5)) Or Mid(words(term), 1, 1) = (Cells(1, 6)) Then
+'powyżej, jeśli pierwsze słowo danej linijki to współrzędne to są one wpisywane
+
+               If Mid(words(term), 2) < 0 Then
                             Cells(counter, i) = 0
-                        ElseIf Mid(words(slowo), 2) >= 0 Then
-                            Cells(counter, i) = Mid(words(slowo), 2)
-                   
-            
+                        ElseIf Mid(words(term), 2) >= 0 Then
+                            Cells(counter, i) = Mid(words(term), 2)
                         End If
-                    
+
+'przyrost grubości filamentu (dodawane jest komórka(x) i komórka(x-1))                   
                         If i = 5 Then
                         Cells(counter, i) = Cells(counter, i) + Cells(counter - 1, i)
                         End If
                     End If
                 End If
             
-            Next slowo
-            
+            Next term
+'jeśli któraś komórka była pusta, to jest uzupełniana komórką wyżej
             If IsEmpty(Cells(counter, i)) Then
              Cells(counter, i) = Cells(counter - 1, i)
             End If
         
           Next i
-        
+
+'przy zmianie chociaż jednej ze współrzędnych(x,y,z) obliczane są konkretne kolumny: długość, czas, przyrost grubości, przyrost czasu, objętość i moc 
         
             If (Cells(counter, 2) <> Cells(counter - 1, 2)) Or (Cells(counter, 3) <> Cells(counter - 1, 3)) Or (Cells(counter, 4) <> Cells(counter - 1, 4)) Then
+
                 'dl
                 Cells(counter, 7) = ((Cells(counter, 2) - Cells(counter - 1, 2)) ^ 2 + (Cells(counter, 3) - Cells(counter - 1, 3)) ^ 2 + (Cells(counter, 4) - Cells(counter - 1, 4)) ^ 2) ^ (0.5)
                
@@ -53,12 +74,12 @@ Do While a.AtEndOfStream <> True
                 
                 'przyrost E
                 Cells(counter, 9) = Cells(counter, 5) - Cells(counter - 1, 5)
-                'przyrost time
+                
+		'przyrost time
                 Cells(counter, 11) = Cells(counter, 1) - Cells(counter - 1, 1)
                 
             
                 'objetosc V
-                  
                 If Cells(counter, 9) = 0 Then
                     Cells(counter, 10) = 0
                 Else
@@ -67,7 +88,6 @@ Do While a.AtEndOfStream <> True
              
                 
                 'power
-                
                 If Cells(counter, 11) = 0 Then
                    Cells(counter, 8) = 0
                 Else
@@ -88,70 +108,3 @@ a.Close
         End If
 
 End Sub
-
-
-Sub TextFile_FindReplace()
-
-Dim TextFile As Integer
-Dim FilePath As String
-Dim FileContent As String
-
-  FilePath = "C:\Users\Dell\Desktop\te.gcode"
-  TextFile = FreeFile
-  Open FilePath For Input As TextFile
-  
-  FileContent = Input(LOF(TextFile), TextFile)
-
-
-  Close TextFile
-  
-'Find/Replace
-  FileContent = Replace(FileContent, ";", " ;")
-
-'Determine the next file number available for use by the FileOpen function
-  TextFile = FreeFile
-
-'Open the text file in a Write State
-  Open FilePath For Output As TextFile
-  
-'Write New Text data to file
-  Print #TextFile, FileContent
-
-'Close Text File
-  Close TextFile
-
-End Sub
-
-
-Sub SaveTextToFile()
-
-    Dim FilePath As String
-    FilePath = "C:\Users\Dell\Desktop\test.txt"
-
-    Dim LastRow As Long
-    Dim fso As FileSystemObject
-    Set fso = New FileSystemObject
-    Dim fileStream As TextStream
-    Dim WordStream As String
-    
-    LastRow = ActiveSheet.UsedRange.SpecialCells(xlCellTypeLastCell).Row
-
-
-    Set fileStream = fso.CreateTextFile(FilePath)
-
-
-    For i = 2 To LastRow
-        
-        WordStream = CStr(Round(Cells(i, 1), 4)) + "," + CStr(Round(Cells(i, 2), 4)) + "," + CStr(Round(Cells(i, 3), 4)) + "," + CStr(Round(Cells(i, 4), 4)) + "," + CStr(Round(Cells(i, 8), 4))
-        fileStream.WriteLine WordStream
-    
-    Next i
-
-    fileStream.Close
-
-    If fso.FileExists(FilePath) Then
-        MsgBox "The file was created!"
-    End If
-
-End Sub
-
