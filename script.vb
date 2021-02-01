@@ -67,7 +67,8 @@ Do While a.AtEndOfStream <> True
             If (Cells(counter, 2) <> Cells(counter - 1, 2)) Or (Cells(counter, 3) <> Cells(counter - 1, 3)) Or (Cells(counter, 4) <> Cells(counter - 1, 4)) Then
 
                 'dl
-                Cells(counter, 7) = ((Cells(counter, 2) - Cells(counter - 1, 2)) ^ 2 + (Cells(counter, 3) - Cells(counter - 1, 3)) ^ 2 + (Cells(counter, 4) - Cells(counter - 1, 4)) ^ 2) ^ (0.5)
+                Cells(counter, 7) = ((Cells(counter, 2) - Cells(counter - 1, 2)) ^ 2 + (Cells(counter, 3) - Cells(counter - 1, 3)) ^ 2 + (Cells(counter, 4) - 
+					Cells(counter - 1, 4)) ^ 2) ^ (0.5)
                
                 'time
                 Cells(counter, 1) = (Cells(counter, 7) / Cells(counter, 6)) * 60 + Cells(16, 18) + Cells(counter - 1, 1)
