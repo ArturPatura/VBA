@@ -79,15 +79,13 @@ Do While a.AtEndOfStream <> True
 		'przyrost time
                 Cells(counter, 11) = Cells(counter, 1) - Cells(counter - 1, 1)
                 
-            
                 'objetosc V
                 If Cells(counter, 9) = 0 Then
                     Cells(counter, 10) = 0
                 Else
                      Cells(counter, 10) = Cells(11, 18) * Cells(12, 18) * Cells(12, 18) / 4 * Cells(counter, 9) / 1000
                 End If
-             
-                
+            
                 'power
                 If Cells(counter, 11) = 0 Then
                    Cells(counter, 8) = 0
