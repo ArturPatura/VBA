@@ -105,5 +105,4 @@ a.Close
         If Cells(counter, 2) = Cells(counter - 1, 2) And Cells(counter, 3) = Cells(counter - 1, 3) And Cells(counter, 4) = Cells(counter - 1, 4) Then
                 Rows(counter).EntireRow.Delete
         End If
-
 End Sub
