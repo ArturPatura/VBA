@@ -1,5 +1,5 @@
 Sub PrepareWorksheet()
-TextFile_FindReplace
+DeleteComments
 
 Dim fs, a, line, counter, letter, NumberOfTerms, term 
 Dim words() As String
@@ -106,3 +106,66 @@ a.Close
                 Rows(counter).EntireRow.Delete
         End If
 End Sub
+
+Sub DeleteComments()
+
+Dim TextFile As Integer
+Dim FilePath As String
+Dim FileContent As String
+
+  FilePath = "C:\Users\Dell\Desktop\model1.gcode"
+  TextFile = FreeFile
+  Open FilePath For Input As TextFile
+  
+  FileContent = Input(LOF(TextFile), TextFile)
+
+
+  Close TextFile
+  
+'Find/Replace
+  FileContent = Replace(FileContent, ";", " ;")
+
+'Determine the next file number available for use by the FileOpen function
+  TextFile = FreeFile
+
+'Open the text file in a Write State
+  Open FilePath For Output As TextFile
+  
+'Write New Text data to file
+  Print #TextFile, FileContent
+
+'Close Text File
+  Close TextFile
+
+End Sub
+
+
+Sub SaveTextToFile()
+
+    Dim FilePath As String
+    FilePath = "C:\Users\Dell\Desktop\Testscript.txt"
+
+    Dim LastRow As Long
+    Dim fso As FileSystemObject
+    Set fso = New FileSystemObject
+    Dim fileStream As TextStream
+    Dim WordStream As String
+    
+    LastRow = ActiveSheet.UsedRange.SpecialCells(xlCellTypeLastCell).Row
+
+
+    Set fileStream = fso.CreateTextFile(FilePath)
+
+
+    For i = 2 To LastRow
+        If ((Cells(i, 8) > 0) Or (Cells(i, 10) > 0)) Then
+            WordStream = CStr(Round(Cells(i, 1), 4)) + "," + CStr(Round(Cells(i, 2), 4)) + "," + CStr(Round(Cells(i, 3), 4)) + "," + CStr(Round(Cells(i, 4), 4)) + "," + CStr(Round(Cells(i, 8), 4))
+            fileStream.WriteLine WordStream
+        End If
+    Next i
+
+    fileStream.Close
+
+    If fso.FileExists(FilePath) Then
+        MsgBox "The file was created!"
+    End If
